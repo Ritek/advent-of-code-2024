@@ -1,4 +1,5 @@
 import re
+import functools
 
 inputFile = open("./input.txt", "r")
 content = inputFile.read()
@@ -6,11 +7,13 @@ content = inputFile.read()
 # --- question 1 ---
 occurences = re.findall("mul\([0-9]+\,[0-9]+\)", content)
 
-sum = 0
-for occurence in occurences:
-    replaced = occurence.replace("mul(", "").replace(")", "")
-    splited = replaced.split(",")
-    sum += int(splited[0]) * int(splited[1])
+
+def reduceRow(row: str) -> int:
+    temp = row.replace("mul(", "").replace(")", "").split(",")
+    return int(temp[0]) * int(temp[1])
+
+
+sum = functools.reduce(lambda a, b: a + reduceRow(b), occurences, 0)
 
 print("Answer to queston 1:", sum)
 

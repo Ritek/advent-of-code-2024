@@ -59,9 +59,7 @@ for incorrect in incorrects:
 
             for match in matches:
                 index = incorrect.index(match)
-                temp = incorrect[i]
-                incorrect[i] = match
-                incorrect[index] = temp
+                incorrect[i], incorrect[index] = match, incorrect[i]
 
 ans = 0
 for incorrect in incorrects:

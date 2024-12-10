@@ -1,4 +1,4 @@
-fileContent = open("./input2.txt", "r").read()
+fileContent = open("./input.txt", "r").read()
 
 nums = list(fileContent.replace("\n", ""))
 
@@ -62,7 +62,7 @@ def findSpace(before, length):
 
 p1 = 0
 p2 = len(queue) - 1
-while p2 > 0:
+while p2 >= 0:
     space = findSpace(p2, len(queue[p2]))
     if space:
         index = space[0]
@@ -78,10 +78,32 @@ while p2 > 0:
     p2 -= 1
 
 
-temp = "".join(queue)
-id = 0
-for i, val in enumerate(list(temp)):
-    if "." not in val:
-        id += i * int(val)
+# temp = "".join(queue)
+# id = 0
+# for i, val in enumerate(list(temp)):
+#     if "." not in val:
+#         id += i * int(val)
 
-print("Answer to question 2:", id)
+
+class Mem():
+    def __init__(b, pos, len): b.pos = pos; b.len = len
+    def val(b): return (2*b.pos + b.len-1) * b.len // 2
+
+
+input = open("./input.txt", "r").read().replace("\n", "")
+pos, mem = 0, []
+for len in map(int, input):
+    mem += [Mem(pos, len)]
+    pos += len
+
+for used in mem[::-2]:
+    for free in mem[1::2]:
+        if (free.pos <= used.pos
+                and free.len >= used.len):
+            used.pos = free.pos
+            free.pos += used.len
+            free.len -= used.len
+
+
+print(sum(id*m.val() for id, m in enumerate(mem[::2])))
+# print("Answer to question 2:", id)

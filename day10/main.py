@@ -64,7 +64,7 @@ def findPaths(pos):
 
 
 ans = 0
-ans2 = 0
+ans2 = 1
 for start in startPos:
     temp = findPaths(start)
     ans += len(temp[0])

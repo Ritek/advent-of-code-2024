@@ -1,4 +1,7 @@
+from itertools import groupby
 from collections import deque
+from collections import defaultdict
+from copy import deepcopy
 
 fileContent = open("./input.txt", "r").readlines()
 matrix = list(map(lambda line: list(line.replace("\n", "")), fileContent))
@@ -70,13 +73,51 @@ def calcRegion(startPos):
 
 printMatrix()
 
-# plots, visited, fence = calcRegion((0, 0))
-# print(plots)
-# print(visited)
-# print("fence", fence)
+
+# better approach for finding length of the fence
+def checkWalls(region):
+    walls = 0
+    for pos in region:
+        y, x = pos
+
+        if (y+1, x) not in region:
+            walls += 1
+        if (y, x+1) not in region:
+            walls += 1
+        if (y-1, x) not in region:
+            walls += 1
+        if (y, x-1) not in region:
+            walls += 1
+
+    return walls
+
+
+def walkEdge(region):
+    p = 0
+    s = 0
+
+    for i, (y, x) in enumerate(region):
+        # Outer corners
+        s += (y, x-1) not in region and (y-1, x) not in region
+        s += (y, x+1) not in region and (y-1, x) not in region
+        s += (y, x-1) not in region and (y+1, x) not in region
+        s += (y, x+1) not in region and (y+1, x) not in region
+        # Inner corners
+        s += (y, x-1) in region and (y-1,
+                                     x) in region and (y-1, x-1) not in region
+        s += (y, x+1) in region and (y-1,
+                                     x) in region and (y-1, x+1) not in region
+        s += (y, x-1) in region and (y+1,
+                                     x) in region and (y+1, x-1) not in region
+        s += (y, x+1) in region and (y+1,
+                                     x) in region and (y+1, x+1) not in region
+
+    return s
+
 
 visitedCells = set()
 fenceTotal = 0
+fenceCost = 0
 for y, row in enumerate(matrix):
     for x, cell in enumerate(row):
         if (y, x) not in visitedCells:
@@ -84,7 +125,9 @@ for y, row in enumerate(matrix):
             for v in visited:
                 visitedCells.add(v)
             fenceTotal += len(region) * len(fence)
-            print("region", matrix[y][x], " has", len(
-                region), "cells and", len(fence), "fence")
+            print(matrix[y][x], walkEdge(region))
+            fenceCost += len(region) * walkEdge(region)
 
-print("fence total:", fenceTotal)
+
+print("Answer to question nr 1:", fenceTotal)
+print("Answer to question nr 2:", fenceCost)

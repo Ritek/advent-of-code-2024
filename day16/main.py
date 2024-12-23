@@ -39,37 +39,71 @@ def checkPath(pos):
     return paths
 
 
-def dijkstra(grid, starts):
+# def dijkstra(grid, starts):
+#     delta = {"E": (0, 1), "W": (0, -1), "N": (-1, 0), "S": (1, 0)}
+#
+#     dist = {}
+#     pq = []
+#     for sr, sc, dir in starts:
+#         dist[(sr, sc, dir)] = 0
+#         heapq.heappush(pq, (0, sr, sc, dir))
+#
+#     while pq:
+#         (d, row, col, direction) = heapq.heappop(pq)
+#         if dist[(row, col, direction)] < d:
+#             continue
+#
+#         for next_dir in "EWNS".replace(direction, ""):
+#             if (row, col, next_dir) not in dist or dist[(row, col, next_dir)] > d + 1000:
+#                 dist[(row, col, next_dir)] = d + 1000
+#                 heapq.heappush(pq, (d + 1000, row, col, next_dir))
+#
+#         dr, dc = delta[direction]
+#         next_row, next_col = row + dr, col + dc
+#         if (0 <= next_row < len(grid) and 0 <= next_col < len(grid[0])
+#             and grid[next_row][next_col] != "#"
+#             and (
+#                 (next_row, next_col, direction) not in dist
+#                 or dist[(next_row, next_col, direction)] > d + 1
+#         )):
+#             dist[(next_row, next_col, direction)] = d + 1
+#             heapq.heappush(pq, (d + 1, next_row, next_col, direction))
+#
+#     return dist
+
+
+def dijkistra(grid, starts):
     delta = {"E": (0, 1), "W": (0, -1), "N": (-1, 0), "S": (1, 0)}
 
-    dist = {}
+    adjecency = {}
     pq = []
+
     for sr, sc, dir in starts:
-        dist[(sr, sc, dir)] = 0
+        adjecency[(sr, sc, dir)] = 0
         heapq.heappush(pq, (0, sr, sc, dir))
 
     while pq:
-        (d, row, col, direction) = heapq.heappop(pq)
-        if dist[(row, col, direction)] < d:
+        (time, row, col, direction) = heapq.heappop(pq)
+        if adjecency[(row, col, direction)] < time:
             continue
 
-        for next_dir in "EWNS".replace(direction, ""):
-            if (row, col, next_dir) not in dist or dist[(row, col, next_dir)] > d + 1000:
-                dist[(row, col, next_dir)] = d + 1000
-                heapq.heappush(pq, (d + 1000, row, col, next_dir))
+        for nextDir in "EWNS".replace(direction, ""):
+            if (row, col, nextDir) not in adjecency or adjecency[(row, col, nextDir)] > time + 1000:
+                adjecency[(row, col, nextDir)] = time + 1000
+                heapq.heappush(pq, (time + 1000, row, col, nextDir))
 
         dr, dc = delta[direction]
-        next_row, next_col = row + dr, col + dc
-        if (0 <= next_row < len(grid) and 0 <= next_col < len(grid[0])
-            and grid[next_row][next_col] != "#"
-            and (
-                (next_row, next_col, direction) not in dist
-                or dist[(next_row, next_col, direction)] > d + 1
-        )):
-            dist[(next_row, next_col, direction)] = d + 1
-            heapq.heappush(pq, (d + 1, next_row, next_col, direction))
+        nextRow, nextCol = row + dr, col + dc
+        if (0 <= nextRow < ROWS and 0 <= nextCol < COLS
+                and grid[nextRow][nextCol] != "#"
+                and (
+                    (nextRow, nextCol, direction) not in adjecency
+                    or adjecency[(nextRow, nextCol, direction)] > time + 1
+                )):
+            adjecency[(nextRow, nextCol, direction)] = time + 1
+            heapq.heappush(pq, (time + 1, nextRow, nextCol, direction))
 
-    return dist
+    return adjecency
 
 
 def parse(lines):
@@ -91,7 +125,7 @@ def parse(lines):
 
 def part1(input):
     grid, (sr, sc), (er, ec) = input
-    dist = dijkstra(grid, [(sr, sc, "E")])
+    dist = dijkistra(grid, [(sr, sc, "E")])
     best = 1000000000
     for dir in "EWNS":
         if (er, ec, dir) in dist:
@@ -99,5 +133,27 @@ def part1(input):
     return best
 
 
-input = parse(open("./input2.txt", "r").readlines())
+def part2(input):
+    grid, (sr, sc), (er, ec) = input
+
+    bestFromStart = dijkistra(grid, [(sr, sc, "E")])
+    bestFromEnd = dijkistra(grid, [(er, ec, d) for d in "EWNS"])
+    optimal = part1(input)
+    result = set()
+    flip = {"E": "W", "W": "E", "N": "S", "S": "N"}
+
+    for row in range(ROWS):
+        for col in range(COLS):
+            for dir in "EWNS":
+                stateFromStart = (row, col, dir)
+                stateFromEnd = (row, col, flip[dir])
+
+                if stateFromStart in bestFromStart and stateFromEnd in bestFromEnd:
+                    if bestFromStart[stateFromStart] + bestFromEnd[stateFromEnd] == optimal:
+                        result.add((row, col))
+    return len(result)
+
+
+input = parse(open("./input.txt", "r").readlines())
 print(part1(input))
+print(part2(input))
